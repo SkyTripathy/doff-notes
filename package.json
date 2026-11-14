@@ -1,0 +1,65 @@
+{
+  "name": "doff-notes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Doff Notes - Fast, lightweight Apple Notes clone for Windows with Google Drive sync",
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "dev:vite": "vite --port 5173",
+    "build:electron": "node scripts/build-electron.mjs",
+    "dev": "concurrently -k \"npm.cmd run dev:vite\" \"npm.cmd run build:electron && wait-on http://localhost:5173 && electron .\"",
+    "build:web": "vite build",
+    "build": "npm.cmd run build:web && npm.cmd run build:electron",
+    "package:win": "npm.cmd run build && node scripts/package-portable.mjs",
+    "package:portable": "npm.cmd run build && node scripts/package-portable.mjs",
+    "build:installer": "node scripts/make-installer.mjs",
+    "package:all": "npm.cmd run build && node scripts/package-portable.mjs && npm.cmd run build:installer"
+  },
+  "dependencies": {
+    "@tiptap/extension-highlight": "^2.11.5",
+    "@tiptap/extension-image": "^2.11.5",
+    "@tiptap/extension-link": "^2.11.5",
+    "@tiptap/extension-placeholder": "^2.11.5",
+    "@tiptap/extension-table": "^2.11.5",
+    "@tiptap/extension-table-cell": "^2.11.5",
+    "@tiptap/extension-table-header": "^2.11.5",
+    "@tiptap/extension-table-row": "^2.11.5",
+    "@tiptap/extension-task-item": "^2.11.5",
+    "@tiptap/extension-task-list": "^2.11.5",
+    "@tiptap/extension-underline": "^2.11.5",
+    "@tiptap/pm": "^2.11.5",
+    "@tiptap/react": "^2.11.5",
+    "@tiptap/starter-kit": "^2.11.5",
+    "lucide-react": "^0.475.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "wait-on": "^8.0.2"
+  },
+  "build": {
+    "appId": "com.doffnotes.app",
+    "productName": "Doff Notes",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "resources/**/*"
+    ],
+    "win": {
+      "icon": "resources/icon.ico",
+      "target": "dir",
+      "signAndEditExecutable": false
+    }
+  }
+}
