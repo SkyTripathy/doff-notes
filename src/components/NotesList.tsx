@@ -10,6 +10,8 @@ import {
   FolderInput,
   SquarePen,
   Hash,
+  PanelLeftOpen,
+  Columns2,
 } from 'lucide-react';
 import { useNotes } from '../context/NotesContext';
 import { Note } from '../types/note';
@@ -38,6 +40,9 @@ export const NotesList: React.FC<NotesListProps> = ({ onOpenLockModal }) => {
     sidebarSelection,
     setSidebarSelection,
     emptyTrash,
+    isSidebarOpen,
+    toggleSidebar,
+    toggleNotesList,
   } = useNotes();
 
   const [contextMenuNoteId, setContextMenuNoteId] = useState<string | null>(null);
@@ -255,8 +260,20 @@ export const NotesList: React.FC<NotesListProps> = ({ onOpenLockModal }) => {
     <div className="notes-pane">
       {/* Top Header - Exact Apple Notes Toolbar */}
       <div className="notes-header titlebar-drag">
-        {/* View Switchers & Trash */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }} className="no-drag">
+        {/* Left Side: Expand Sidebar if closed & View Switchers & Trash */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className="no-drag">
+          {!isSidebarOpen && (
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={toggleSidebar}
+              title="Show Folders Sidebar (Ctrl+\)"
+              style={{ color: 'var(--accent)', width: '28px', height: '28px' }}
+            >
+              <PanelLeftOpen size={16} />
+            </button>
+          )}
+
           <button
             className={`icon-btn ${settings.viewMode === 'list' ? 'active' : ''}`}
             onClick={() => setViewMode('list')}
@@ -302,20 +319,32 @@ export const NotesList: React.FC<NotesListProps> = ({ onOpenLockModal }) => {
           )}
         </div>
 
-        {/* Quick Compose Button */}
-        <button
-          className="icon-btn primary no-drag"
-          onClick={() => createNote()}
-          title="Create New Note (Ctrl+N)"
-          style={{
-            backgroundColor: 'rgba(212, 155, 41, 0.14)',
-            color: 'var(--accent)',
-            borderRadius: '6px',
-            flexShrink: 0,
-          }}
-        >
-          <SquarePen size={15} />
-        </button>
+        {/* Right Action Group: Quick Compose & Collapse Notes List */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className="no-drag">
+          <button
+            className="icon-btn primary"
+            onClick={() => createNote()}
+            title="Create New Note (Ctrl+N)"
+            style={{
+              backgroundColor: 'rgba(212, 155, 41, 0.14)',
+              color: 'var(--accent)',
+              borderRadius: '6px',
+              flexShrink: 0,
+            }}
+          >
+            <SquarePen size={15} />
+          </button>
+
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={toggleNotesList}
+            title="Collapse Notes List (Ctrl+Shift+L)"
+            style={{ color: 'var(--text-secondary)', width: '28px', height: '28px' }}
+          >
+            <Columns2 size={15} />
+          </button>
+        </div>
       </div>
 
       {/* Tag Filter Banner */}

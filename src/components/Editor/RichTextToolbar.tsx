@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Editor } from '@tiptap/react';
 import {
   Bold,
@@ -14,14 +14,41 @@ import {
   Link as LinkIcon,
   Minus,
   Code,
+  ChevronDown,
+  Check,
+  Video,
 } from 'lucide-react';
+import { extractYouTubeVideoId, extractDomain } from './extensions/LinkCard';
 
 interface RichTextToolbarProps {
   editor: Editor | null;
 }
 
+const STYLE_OPTIONS = [
+  { value: 'title', label: 'Title', fontStyle: { fontSize: '15px', fontWeight: 700 } },
+  { value: 'heading', label: 'Heading', fontStyle: { fontSize: '14px', fontWeight: 600 } },
+  { value: 'subheading', label: 'Subheading', fontStyle: { fontSize: '13px', fontWeight: 600 } },
+  { value: 'body', label: 'Body', fontStyle: { fontSize: '13px', fontWeight: 400 } },
+  { value: 'code', label: 'Monospaced', fontStyle: { fontSize: '12px', fontFamily: 'monospace' } },
+];
+
 export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isStyleMenuOpen, setIsStyleMenuOpen] = useState(false);
+
+  // Close style dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsStyleMenuOpen(false);
+      }
+    };
+    if (isStyleMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isStyleMenuOpen]);
 
   if (!editor) return null;
 
@@ -33,8 +60,8 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
     return 'body';
   };
 
-  const handleStyleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
+  const handleSelectStyle = (val: string) => {
+    setIsStyleMenuOpen(false);
     if (val === 'title') {
       editor.chain().focus().setHeading({ level: 1 }).run();
     } else if (val === 'heading') {
@@ -48,13 +75,18 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
     }
   };
 
+  const currentStyleValue = getCurrentHeadingStyle();
+  const currentStyleObj = STYLE_OPTIONS.find((s) => s.value === currentStyleValue) || STYLE_OPTIONS[3];
+
   const handleInsertImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          editor.chain().focus().setImage({ src: reader.result }).run();
+          (editor.chain().focus() as any)
+            .setImage({ src: reader.result, width: '100%', alignment: 'center' })
+            .run();
         }
       };
       reader.readAsDataURL(file);
@@ -73,30 +105,74 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   };
 
+  const handleInsertVideoCard = () => {
+    const url = window.prompt('Enter YouTube or Web Link for Rich Preview Card:');
+    if (!url || !url.trim()) return;
+
+    const trimmed = url.trim();
+    const ytId = extractYouTubeVideoId(trimmed);
+    const domain = extractDomain(trimmed);
+
+    (editor.chain().focus() as any)
+      .insertContent({
+        type: 'linkCard',
+        attrs: {
+          url: trimmed,
+          videoId: ytId,
+          title: ytId ? 'YouTube Video' : trimmed,
+          domain: domain,
+        },
+      })
+      .run();
+  };
+
   return (
     <div className="rich-toolbar">
-      {/* Paragraph / Heading Style Select */}
-      <select
-        value={getCurrentHeadingStyle()}
-        onChange={handleStyleChange}
-        style={{
-          border: '1px solid var(--border-color)',
-          backgroundColor: 'transparent',
-          color: 'var(--text-primary)',
-          borderRadius: '6px',
-          padding: '2px 8px',
-          fontSize: '12px',
-          fontWeight: 500,
-          outline: 'none',
-          cursor: 'pointer',
-        }}
-      >
-        <option value="title">Title</option>
-        <option value="heading">Heading</option>
-        <option value="subheading">Subheading</option>
-        <option value="body">Body</option>
-        <option value="code">Monospaced</option>
-      </select>
+      {/* Custom Apple-style Paragraph / Heading Style Dropdown (Always crystal-clear text) */}
+      <div ref={dropdownRef} style={{ position: 'relative' }}>
+        <button
+          type="button"
+          onClick={() => setIsStyleMenuOpen(!isStyleMenuOpen)}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            border: '1px solid var(--border-color)',
+            backgroundColor: 'var(--bg-window)',
+            color: 'var(--text-primary)',
+            borderRadius: '6px',
+            padding: '3px 8px',
+            fontSize: '12px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            minWidth: '82px',
+            justifyContent: 'space-between',
+          }}
+          title="Text Style"
+        >
+          <span>{currentStyleObj.label}</span>
+          <ChevronDown size={12} color="var(--text-secondary)" />
+        </button>
+
+        {isStyleMenuOpen && (
+          <div className="apple-style-menu">
+            {STYLE_OPTIONS.map((opt) => {
+              const active = opt.value === currentStyleValue;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`apple-style-option ${active ? 'active' : ''}`}
+                  onClick={() => handleSelectStyle(opt.value)}
+                >
+                  <span style={opt.fontStyle}>{opt.label}</span>
+                  {active && <Check size={14} color="var(--accent)" />}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       <div className="toolbar-divider" />
 
@@ -188,7 +264,7 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
         <TableIcon size={14} />
       </button>
 
-      {/* Link */}
+      {/* Standard Link */}
       <button
         className={`icon-btn ${editor.isActive('link') ? 'active' : ''}`}
         style={{ width: '28px', height: '28px' }}
@@ -198,12 +274,22 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
         <LinkIcon size={14} />
       </button>
 
-      {/* Image attachment */}
+      {/* Video / Rich Link Card (YouTube Thumbnails & Bookmark Cards) */}
+      <button
+        className="icon-btn"
+        style={{ width: '28px', height: '28px' }}
+        onClick={handleInsertVideoCard}
+        title="Insert YouTube / Link Preview Card"
+      >
+        <Video size={14} />
+      </button>
+
+      {/* Image attachment (Resizable) */}
       <button
         className="icon-btn"
         style={{ width: '28px', height: '28px' }}
         onClick={() => fileInputRef.current?.click()}
-        title="Insert Photo / Image"
+        title="Insert Image (Resizable)"
       >
         <ImageIcon size={14} />
       </button>

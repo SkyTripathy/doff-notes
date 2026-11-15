@@ -306,7 +306,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               Doff Notes
             </span>
             <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              v1.1.0 • 100% Offline
+              v1.2.0 • 100% Offline
             </span>
           </div>
           <button className="apple-btn" onClick={onClose}>

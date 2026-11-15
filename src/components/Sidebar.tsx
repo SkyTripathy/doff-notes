@@ -14,6 +14,7 @@ import {
   ChevronDown,
   CornerDownRight,
   NotebookTabs,
+  PanelLeftClose,
 } from 'lucide-react';
 import { useNotes } from '../context/NotesContext';
 import { Folder, SidebarSelection } from '../types/note';
@@ -33,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
     toggleFolderExpanded,
     tags,
     noteCounts,
+    toggleSidebar,
   } = useNotes();
 
   const [isCreatingRootFolder, setIsCreatingRootFolder] = useState(false);
@@ -305,14 +307,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
 
   return (
     <aside className="sidebar">
-      {/* Clean Doff Notes Titlebar Header (No Mac dots, pure Doff Notes) */}
-      <div className="sidebar-header titlebar-drag">
+      {/* Clean Doff Notes Titlebar Header with Sidebar Collapse Button */}
+      <div
+        className="sidebar-header titlebar-drag"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 12px',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} className="no-drag">
           <NotebookTabs size={18} color="var(--accent)" />
           <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--text-primary)' }}>
             DOFF NOTES
           </span>
         </div>
+        <button
+          type="button"
+          className="icon-btn no-drag"
+          onClick={toggleSidebar}
+          title="Collapse Folders Sidebar (Ctrl+\)"
+          style={{ width: '26px', height: '26px', color: 'var(--text-secondary)' }}
+        >
+          <PanelLeftClose size={15} />
+        </button>
       </div>
 
       <div className="sidebar-nav no-drag">

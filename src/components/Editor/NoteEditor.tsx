@@ -7,7 +7,8 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import Image from '@tiptap/extension-image';
+import { ResizableImage } from './extensions/ResizableImage';
+import { LinkCard, extractYouTubeVideoId } from './extensions/LinkCard';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import Highlight from '@tiptap/extension-highlight';
@@ -75,10 +76,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ onOpenLockModal }) => {
       TableRow,
       TableHeader,
       TableCell,
-      Image.configure({
-        inline: true,
+      ResizableImage.configure({
+        inline: false,
         allowBase64: true,
       }),
+      LinkCard,
       Underline,
       Highlight.configure({
         multicolor: false,
@@ -90,6 +92,56 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ onOpenLockModal }) => {
         placeholder: 'Title or start writing...',
       }),
     ],
+    editorProps: {
+      handlePaste: (view, event) => {
+        // 1. Check for pasted image file (e.g. Snipping tool / screenshot Ctrl+V)
+        const items = event.clipboardData?.items;
+        if (items) {
+          for (let i = 0; i < items.length; i++) {
+            if (items[i].type.startsWith('image/')) {
+              const file = items[i].getAsFile();
+              if (file) {
+                event.preventDefault();
+                const reader = new FileReader();
+                reader.onload = () => {
+                  if (typeof reader.result === 'string') {
+                    const node = view.state.schema.nodes.image.create({
+                      src: reader.result,
+                      width: '100%',
+                      alignment: 'center',
+                    });
+                    const tr = view.state.tr.replaceSelectionWith(node);
+                    view.dispatch(tr);
+                  }
+                };
+                reader.readAsDataURL(file);
+                return true;
+              }
+            }
+          }
+        }
+
+        // 2. Check for pasted text URL (e.g. YouTube links)
+        const text = event.clipboardData?.getData('text/plain')?.trim();
+        if (text && (text.startsWith('http://') || text.startsWith('https://'))) {
+          const ytId = extractYouTubeVideoId(text);
+          if (ytId) {
+            event.preventDefault();
+            const node = view.state.schema.nodes.linkCard.create({
+              url: text,
+              videoId: ytId,
+              domain: 'youtube.com',
+              title: 'YouTube Video',
+            });
+            const tr = view.state.tr.replaceSelectionWith(node);
+            view.dispatch(tr);
+            return true;
+          }
+        }
+
+        return false;
+      },
+    },
     content: activeNote ? (unlockedNotes[activeNote.id] ?? activeNote.contentHtml ?? '') : '',
     onUpdate: ({ editor: ed }) => {
       if (isSettingContentRef.current) return;
@@ -159,7 +211,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ onOpenLockModal }) => {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          editor.chain().focus().setImage({ src: reader.result }).run();
+          (editor.chain().focus() as any)
+            .setImage({ src: reader.result, width: '100%', alignment: 'center' })
+            .run();
         }
       };
       reader.readAsDataURL(file);
