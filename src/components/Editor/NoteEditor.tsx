@@ -12,7 +12,7 @@ import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import Highlight from '@tiptap/extension-highlight';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Lock, FileText, AlertTriangle, KeyRound, Eye, EyeOff, Plus } from 'lucide-react';
+import { Lock, FileText, AlertTriangle, KeyRound, Eye, EyeOff, Plus, Hash, X } from 'lucide-react';
 
 import { useNotes } from '../../context/NotesContext';
 import { EditorToolbar } from './EditorToolbar';
@@ -34,9 +34,15 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ onOpenLockModal }) => {
     settings,
     restoreNote,
     permanentlyDeleteNote,
+    addTagToNote,
+    removeTagFromNote,
+    setSidebarSelection,
+    isFocusMode,
   } = useNotes();
 
   const [isRichToolbarOpen, setIsRichToolbarOpen] = useState(false);
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [newTagInput, setNewTagInput] = useState('');
   const [unlockPassword, setUnlockPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [unlockError, setUnlockError] = useState<string | null>(null);
@@ -214,9 +220,18 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ onOpenLockModal }) => {
     );
   }
 
+  const handleAddTagSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (newTagInput.trim() && activeNote) {
+      addTagToNote(activeNote.id, newTagInput.trim());
+      setNewTagInput('');
+      setIsAddingTag(false);
+    }
+  };
+
   return (
     <ErrorBoundary fallbackTitle="Editor encountered an issue">
-      <div className="editor-pane">
+      <div className={`editor-pane ${isFocusMode ? 'focus-mode-pane' : ''}`}>
         {/* Top Main Toolbar */}
         <EditorToolbar
           isRichToolbarOpen={isRichToolbarOpen}
@@ -325,16 +340,130 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ onOpenLockModal }) => {
         ) : (
           /* Rich Text Editor Container - Left Aligned text canvas */
           <div
-            className="editor-content-container"
+            className={`editor-content-container ${isFocusMode ? 'focus-mode-container' : ''}`}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 editor?.commands.focus('end');
               }
             }}
           >
-            {/* Top Right Date Stamp (Apple Notes Style) */}
-            <div className="editor-date-stamp">
-              {formatEditorHeaderDate(activeNote.updatedAt)}
+            {/* Header: Interactive Tag Bar & Date Stamp */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '8px',
+                marginBottom: '16px',
+              }}
+            >
+              {/* Note Tags */}
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                {activeNote.tags &&
+                  activeNote.tags.map((t) => (
+                    <span
+                      key={t}
+                      className="tag-pill"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '2px 8px',
+                        fontSize: '11px',
+                        backgroundColor: 'rgba(212, 155, 41, 0.12)',
+                        color: 'var(--accent)',
+                        borderRadius: '9999px',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        border: '1px solid rgba(212, 155, 41, 0.25)',
+                      }}
+                      title={`Filter all notes with #${t}`}
+                      onClick={() => setSidebarSelection({ type: 'tag', tag: t })}
+                    >
+                      <Hash size={11} />
+                      <span>{t}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeTagFromNote(activeNote.id, t);
+                        }}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginLeft: '2px',
+                          color: 'var(--text-muted)',
+                          padding: 0,
+                          lineHeight: 1,
+                          cursor: 'pointer',
+                        }}
+                        title="Remove tag"
+                      >
+                        <X size={11} />
+                      </button>
+                    </span>
+                  ))}
+
+                {isAddingTag ? (
+                  <form onSubmit={handleAddTagSubmit} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="tag-name..."
+                      value={newTagInput}
+                      onChange={(e) => setNewTagInput(e.target.value)}
+                      onBlur={() => {
+                        if (newTagInput.trim()) {
+                          handleAddTagSubmit();
+                        } else {
+                          setIsAddingTag(false);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') setIsAddingTag(false);
+                      }}
+                      style={{
+                        fontSize: '11px',
+                        padding: '2px 8px',
+                        borderRadius: '9999px',
+                        border: '1px solid var(--accent)',
+                        backgroundColor: 'var(--bg-editor)',
+                        color: 'var(--text-primary)',
+                        outline: 'none',
+                        width: '90px',
+                      }}
+                    />
+                  </form>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingTag(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px',
+                      color: 'var(--text-muted)',
+                      padding: '2px 8px',
+                      borderRadius: '9999px',
+                      border: '1px dashed var(--border-color)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title="Add a tag to this note (or type #tag in your note text)"
+                  >
+                    <Plus size={11} />
+                    <span>Tag</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Top Right Date Stamp */}
+              <div className="editor-date-stamp" style={{ margin: 0 }}>
+                {formatEditorHeaderDate(activeNote.updatedAt)}
+              </div>
             </div>
 
             <EditorContent editor={editor} />

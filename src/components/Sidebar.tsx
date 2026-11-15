@@ -405,28 +405,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
         )}
 
         {/* Tags Section */}
-        {tags.length > 0 && (
-          <>
-            <div className="sidebar-title" style={{ marginTop: '16px' }}>
-              Tags
-            </div>
-            {tags.map(({ tag, count }) => {
-              const active = isSelected({ type: 'tag', tag });
-              return (
-                <div
-                  key={tag}
-                  className={`sidebar-item ${active ? 'active' : ''}`}
-                  onClick={() => setSidebarSelection({ type: 'tag', tag })}
-                >
-                  <div className="sidebar-item-left">
-                    <Hash size={14} color="var(--text-secondary)" />
-                    <span>#{tag}</span>
-                  </div>
-                  <span className="sidebar-item-badge">{count}</span>
+        <div className="sidebar-title" style={{ marginTop: '16px' }}>
+          Tags
+        </div>
+        {tags.length > 0 ? (
+          tags.map(({ tag, count }) => {
+            const active = isSelected({ type: 'tag', tag });
+            return (
+              <div
+                key={tag}
+                className={`sidebar-item ${active ? 'active' : ''}`}
+                onClick={() => setSidebarSelection({ type: 'tag', tag })}
+              >
+                <div className="sidebar-item-left">
+                  <Hash size={14} color="var(--text-secondary)" />
+                  <span>#{tag}</span>
                 </div>
-              );
-            })}
-          </>
+                <span className="sidebar-item-badge">{count}</span>
+              </div>
+            );
+          })
+        ) : (
+          <div
+            style={{
+              padding: '6px 12px',
+              fontSize: '11px',
+              color: 'var(--text-muted)',
+              lineHeight: 1.4,
+            }}
+          >
+            Type <span style={{ backgroundColor: 'rgba(140,140,140,0.12)', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>#tag</span> in any note or click <strong>+ Tag</strong> to categorize.
+          </div>
         )}
 
         {/* Recently Deleted (Trash) */}

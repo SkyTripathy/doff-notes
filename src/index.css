@@ -372,11 +372,28 @@ button {
 
 .tag-pill {
   font-size: 10px;
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 9999px;
-  background-color: rgba(140, 140, 140, 0.12);
-  color: var(--text-secondary);
-  font-weight: 500;
+  background-color: rgba(212, 155, 41, 0.12);
+  color: var(--accent);
+  font-weight: 600;
+  transition: all 0.12s ease;
+}
+
+.tag-pill:hover {
+  background-color: var(--accent);
+  color: #ffffff !important;
+}
+
+/* Focus Mode (Distraction-Free Apple Notes Writing) */
+.app-container.focus-mode .editor-pane {
+  background-color: var(--bg-window);
+}
+
+.focus-mode-container {
+  max-width: 860px !important;
+  margin: 0 auto !important;
+  padding: 36px 48px 80px 48px !important;
 }
 
 /* Gallery Grid View */

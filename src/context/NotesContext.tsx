@@ -27,6 +27,8 @@ interface NotesContextType {
   activeNote: Note | null;
   searchQuery: string;
   isSidebarOpen: boolean;
+  isNotesListOpen: boolean;
+  isFocusMode: boolean;
   unlockedNotes: Record<string, string>;
 
   // Navigation & selection
@@ -34,6 +36,13 @@ interface NotesContextType {
   setActiveNoteId: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
   setIsSidebarOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
+  setIsNotesListOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
+  setIsFocusMode: (focus: boolean | ((prev: boolean) => boolean)) => void;
+  toggleSidebar: () => void;
+  toggleNotesList: () => void;
+  toggleFocusMode: () => void;
+  addTagToNote: (noteId: string, tag: string) => void;
+  removeTagFromNote: (noteId: string, tag: string) => void;
 
   // Notes operations
   createNote: (folderId?: string) => Note;
@@ -94,6 +103,8 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isNotesListOpen, setIsNotesListOpen] = useState(true);
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const [unlockedNotes, setUnlockedNotes] = useState<Record<string, string>>({});
 
   // Initial load
@@ -322,11 +333,13 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setNotes((prev) =>
         prev.map((n) => {
           if (n.id !== noteId) return n;
+          // Keep manually added tags + automatically parsed hashtags from text
+          const mergedTags = Array.from(new Set([...(n.tags || []), ...meta.tags]));
           return {
             ...n,
             title: meta.title,
             snippet: meta.snippet,
-            tags: meta.tags,
+            tags: mergedTags,
             thumbnail: meta.thumbnail,
             contentHtml: n.isLocked ? n.contentHtml : contentHtml,
             updatedAt: now,
@@ -343,6 +356,50 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     },
     []
   );
+
+  const addTagToNote = useCallback((noteId: string, rawTag: string) => {
+    const clean = rawTag.trim().toLowerCase().replace(/^#+/, '').replace(/\s+/g, '-');
+    if (!clean) return;
+
+    setNotes((prev) =>
+      prev.map((n) => {
+        if (n.id !== noteId) return n;
+        const currentTags = n.tags || [];
+        if (currentTags.includes(clean)) return n;
+        return {
+          ...n,
+          tags: [...currentTags, clean],
+          updatedAt: Date.now(),
+        };
+      })
+    );
+  }, []);
+
+  const removeTagFromNote = useCallback((noteId: string, rawTag: string) => {
+    const clean = rawTag.trim().toLowerCase().replace(/^#+/, '');
+    setNotes((prev) =>
+      prev.map((n) => {
+        if (n.id !== noteId) return n;
+        return {
+          ...n,
+          tags: (n.tags || []).filter((t) => t.toLowerCase() !== clean),
+          updatedAt: Date.now(),
+        };
+      })
+    );
+  }, []);
+
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarOpen((prev) => !prev);
+  }, []);
+
+  const toggleNotesList = useCallback(() => {
+    setIsNotesListOpen((prev) => !prev);
+  }, []);
+
+  const toggleFocusMode = useCallback(() => {
+    setIsFocusMode((prev) => !prev);
+  }, []);
 
   const togglePin = useCallback((noteId: string) => {
     setNotes((prev) =>
@@ -564,11 +621,20 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         activeNote,
         searchQuery,
         isSidebarOpen,
+        isNotesListOpen,
+        isFocusMode,
         unlockedNotes,
         setSidebarSelection,
         setActiveNoteId,
         setSearchQuery,
         setIsSidebarOpen,
+        setIsNotesListOpen,
+        setIsFocusMode,
+        toggleSidebar,
+        toggleNotesList,
+        toggleFocusMode,
+        addTagToNote,
+        removeTagFromNote,
         createNote,
         updateNoteContent,
         togglePin,

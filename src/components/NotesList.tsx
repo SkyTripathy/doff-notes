@@ -9,6 +9,7 @@ import {
   Trash2,
   FolderInput,
   SquarePen,
+  Hash,
 } from 'lucide-react';
 import { useNotes } from '../context/NotesContext';
 import { Note } from '../types/note';
@@ -35,6 +36,7 @@ export const NotesList: React.FC<NotesListProps> = ({ onOpenLockModal }) => {
     moveNoteToFolder,
     folders,
     sidebarSelection,
+    setSidebarSelection,
     emptyTrash,
   } = useNotes();
 
@@ -99,7 +101,16 @@ export const NotesList: React.FC<NotesListProps> = ({ onOpenLockModal }) => {
             {note.tags && note.tags.length > 0 && (
               <div className="note-tags">
                 {note.tags.map((t) => (
-                  <span key={t} className="tag-pill">
+                  <span
+                    key={t}
+                    className="tag-pill"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSidebarSelection({ type: 'tag', tag: t });
+                    }}
+                    title={`Filter by #${t}`}
+                    style={{ cursor: 'pointer' }}
+                  >
                     #{t}
                   </span>
                 ))}
@@ -306,6 +317,44 @@ export const NotesList: React.FC<NotesListProps> = ({ onOpenLockModal }) => {
           <SquarePen size={15} />
         </button>
       </div>
+
+      {/* Tag Filter Banner */}
+      {sidebarSelection.type === 'tag' && (
+        <div
+          style={{
+            padding: '6px 12px',
+            backgroundColor: 'rgba(212, 155, 41, 0.1)',
+            borderBottom: '1px solid var(--border-color)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent)', fontWeight: 600 }}>
+            <Hash size={13} />
+            <span>#{sidebarSelection.tag}</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 400 }}>
+              ({filteredNotes.length} note{filteredNotes.length !== 1 ? 's' : ''})
+            </span>
+          </div>
+          <button
+            onClick={() => setSidebarSelection({ type: 'all' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              fontSize: '11px',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
+            <span>Clear</span>
+            <X size={12} />
+          </button>
+        </div>
+      )}
 
       {/* Trash Header Banner */}
       {isTrash && (

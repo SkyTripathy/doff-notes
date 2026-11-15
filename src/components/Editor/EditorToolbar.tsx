@@ -13,6 +13,10 @@ import {
   Table as TableIcon,
   CheckSquare,
   Image as ImageIcon,
+  PanelLeft,
+  Columns2,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { useNotes } from '../../context/NotesContext';
 import { exportPdf, exportMarkdownFile } from '../../services/storage';
@@ -42,6 +46,12 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
     restoreNote,
     permanentlyDeleteNote,
     unlockedNotes,
+    isSidebarOpen,
+    isNotesListOpen,
+    isFocusMode,
+    toggleSidebar,
+    toggleNotesList,
+    toggleFocusMode,
   } = useNotes();
 
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -78,15 +88,46 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
   return (
     <div className="editor-toolbar titlebar-drag">
-      {/* Left side: Compose / New Note Icon (matching Image 2 & 3) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} className="no-drag">
+      {/* Left side: Apple Notes View Toggles & New Note */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className="no-drag">
+        {/* Toggle Folder Sidebar */}
+        <button
+          className={`icon-btn ${isSidebarOpen && !isFocusMode ? 'active' : ''}`}
+          onClick={toggleSidebar}
+          title="Toggle Folder Sidebar (Ctrl+\)"
+        >
+          <PanelLeft size={16} />
+        </button>
+
+        {/* Toggle Notes List */}
+        <button
+          className={`icon-btn ${isNotesListOpen && !isFocusMode ? 'active' : ''}`}
+          onClick={toggleNotesList}
+          title="Toggle Notes List (Ctrl+Shift+L)"
+        >
+          <Columns2 size={16} />
+        </button>
+
+        {/* Focus Mode (Collapse Both Sidebars for 100% writing focus) */}
+        <button
+          className={`icon-btn ${isFocusMode ? 'active' : ''}`}
+          onClick={toggleFocusMode}
+          title={isFocusMode ? 'Exit Focus Mode (Esc)' : 'Focus Mode - Full Width Editor (Ctrl+Shift+F)'}
+          style={isFocusMode ? { backgroundColor: 'var(--accent)', color: '#ffffff' } : {}}
+        >
+          {isFocusMode ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+        </button>
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-color)', margin: '0 4px' }} />
+
+        {/* Compose / New Note Icon */}
         <button
           className="icon-btn"
           onClick={() => createNote()}
           title="New Note (Ctrl+N)"
           style={{ color: 'var(--text-primary)' }}
         >
-          <SquarePen size={18} />
+          <SquarePen size={17} />
         </button>
       </div>
 

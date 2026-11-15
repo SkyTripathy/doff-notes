@@ -9,7 +9,16 @@ import { Minus, Square, X } from 'lucide-react';
 import { isElectron } from './services/storage';
 
 const MainLayout: React.FC = () => {
-  const { isSidebarOpen, createNote, setIsSidebarOpen } = useNotes();
+  const {
+    isSidebarOpen,
+    isNotesListOpen,
+    isFocusMode,
+    createNote,
+    toggleSidebar,
+    toggleNotesList,
+    toggleFocusMode,
+    setIsFocusMode,
+  } = useNotes();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [lockModalNoteId, setLockModalNoteId] = useState<string | null>(null);
 
@@ -20,27 +29,46 @@ const MainLayout: React.FC = () => {
         e.preventDefault();
         createNote();
       }
-      // Ctrl+\ or Ctrl+Shift+S: Toggle Sidebar
-      if ((e.ctrlKey || e.metaKey) && (e.key === '\\' || (e.shiftKey && e.key.toLowerCase() === 's'))) {
+      // Ctrl+\: Toggle Folder Sidebar
+      if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
         e.preventDefault();
-        setIsSidebarOpen((prev) => !prev);
+        toggleSidebar();
+      }
+      // Ctrl+Shift+L: Toggle Notes List
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'l') {
+        e.preventDefault();
+        toggleNotesList();
+      }
+      // Ctrl+Shift+F: Toggle Focus Mode (Pure Note Writing)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleFocusMode();
+      }
+      // Escape: Exit Focus Mode if active
+      if (e.key === 'Escape' && isFocusMode) {
+        e.preventDefault();
+        setIsFocusMode(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [createNote, setIsSidebarOpen]);
+  }, [createNote, toggleSidebar, toggleNotesList, toggleFocusMode, isFocusMode, setIsFocusMode]);
 
   const handleMinimize = () => window.electronAPI?.minimizeWindow();
   const handleMaximize = () => window.electronAPI?.maximizeWindow();
   const handleClose = () => window.electronAPI?.closeWindow();
 
   return (
-    <div className="app-container">
-      {/* 3-Pane Apple Notes Architecture */}
-      {isSidebarOpen && <Sidebar onOpenSettings={() => setIsSettingsOpen(true)} />}
+    <div className={`app-container ${isFocusMode ? 'focus-mode' : ''}`}>
+      {/* 3-Pane Apple Notes Architecture with smooth collapse */}
+      {isSidebarOpen && !isFocusMode && (
+        <Sidebar onOpenSettings={() => setIsSettingsOpen(true)} />
+      )}
 
-      <NotesList onOpenLockModal={(id) => setLockModalNoteId(id)} />
+      {isNotesListOpen && !isFocusMode && (
+        <NotesList onOpenLockModal={(id) => setLockModalNoteId(id)} />
+      )}
 
       <NoteEditor onOpenLockModal={(id) => setLockModalNoteId(id)} />
 
