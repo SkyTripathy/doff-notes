@@ -475,7 +475,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
         <button
           className="icon-btn"
           onClick={onOpenSettings}
-          title="Preferences & Google Drive Sync"
+          title="Preferences"
         >
           <SettingsIcon size={15} />
         </button>
