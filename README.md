@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Privacy-100%25%20Offline-success?style=flat-square" alt="100% Offline" />
   <img src="https://img.shields.io/badge/Encryption-AES--256--GCM-blueviolet?style=flat-square" alt="AES-256" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=flat-square" alt="MIT License" />
-  <img src="https://img.shields.io/badge/Version-1.2.0-gold?style=flat-square" alt="Version 1.2.0" />
+  <img src="https://img.shields.io/badge/Version-1.2.1-gold?style=flat-square" alt="Version 1.2.1" />
 </p>
 
 ---
