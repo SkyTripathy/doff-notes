@@ -300,7 +300,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           </div>
         </div>
 
-        <div className="modal-footer">
+        <div className="modal-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              Doff Notes
+            </span>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              v1.1.0 • 100% Offline
+            </span>
+          </div>
           <button className="apple-btn" onClick={onClose}>
             Done
           </button>

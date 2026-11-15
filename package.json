@@ -1,8 +1,8 @@
 {
   "name": "doff-notes",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Doff Notes - Fast, lightweight Apple Notes clone for Windows with Google Drive sync",
+  "description": "Doff Notes - Fast, lightweight, 100% offline Apple Notes clone for Windows",
   "main": "dist-electron/main.cjs",
   "scripts": {
     "dev:vite": "vite --port 5173",

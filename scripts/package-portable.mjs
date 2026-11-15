@@ -44,9 +44,10 @@ if (fs.existsSync(path.join(rootDir, 'resources'))) {
 }
 
 // App package.json
+const rootPkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'));
 const appPkg = {
   name: 'doff-notes',
-  version: '1.0.0',
+  version: rootPkg.version || '1.1.0',
   productName: 'Doff Notes',
   main: 'dist-electron/main.cjs',
 };

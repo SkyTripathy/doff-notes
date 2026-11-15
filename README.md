@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Privacy-100%25%20Offline-success?style=flat-square" alt="100% Offline" />
   <img src="https://img.shields.io/badge/Encryption-AES--256--GCM-blueviolet?style=flat-square" alt="AES-256" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=flat-square" alt="MIT License" />
-  <img src="https://img.shields.io/badge/Version-1.0.0-gold?style=flat-square" alt="Version 1.0.0" />
+  <img src="https://img.shields.io/badge/Version-1.1.0-gold?style=flat-square" alt="Version 1.1.0" />
 </p>
 
 ---
@@ -31,6 +31,8 @@ Designed from the ground up to be **100% offline and local-first**, your notes n
 ### 🎨 Pixel-Perfect Apple Notes Aesthetic
 - **Warm Parchment Sidebar**: Clean `#f7f6f1` background with macOS traffic lights (`🔴 🟡 🟢`), folder navigation, and amber active highlights.
 - **Left-Aligned Editorial Typography**: Matching Apple Notes' clean left-aligned headers, subtitles, and body text.
+- **Collapsible Sidebars & Focus Mode**: Collapse the folder sidebar (`Ctrl+\`) or notes list (`Ctrl+Shift+L`), or enter Apple Notes Focus Mode (`Ctrl+Shift+F`) to write on a clean, centered 860px canvas.
+- **Interactive Tag Management**: Type `#tag` in any note or click `+ Tag` at the top bar. Filter notes by tag with one click and clear filters easily.
 - **Dual View Modes**: Switch between classic **List View** (`≡`) and visual **Gallery View** (`⊞`).
 - **Dark Mode Support**: Seamlessly toggle between Light, Dark, or System mode in Preferences.
 
@@ -67,6 +69,10 @@ Designed from the ground up to be **100% offline and local-first**, your notes n
 | Shortcut | Action |
 | :--- | :--- |
 | `Ctrl + N` | Create a New Note |
+| `Ctrl + \` | Toggle Folders Sidebar |
+| `Ctrl + Shift + L` | Toggle Notes List |
+| `Ctrl + Shift + F` | Focus Mode (Distraction-Free Full Canvas) |
+| `Escape` | Exit Focus Mode |
 | `Ctrl + B` | Bold |
 | `Ctrl + I` | Italic |
 | `Ctrl + U` | Underline |
