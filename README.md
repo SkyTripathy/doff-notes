@@ -86,7 +86,7 @@ Designed from the ground up to be **100% offline and local-first**, your notes n
 ## 🚀 Download & Installation
 
 ### Option 1: Standalone Installer (Recommended)
-Download **`Doff-Notes-Setup.exe`** from the [Releases](https://github.com) tab.
+Download **`Doff-Notes-Setup.exe`** from the [Releases](https://github.com/SkyTripathy/doff-notes/releases) tab.
 - Run `Doff-Notes-Setup.exe` once to install.
 - Launch Doff Notes from your **Desktop** or **Start Menu**.
 - The installer can be kept on a USB drive or deleted after installation.
