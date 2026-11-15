@@ -13,7 +13,6 @@ import {
   Table as TableIcon,
   CheckSquare,
   Image as ImageIcon,
-  PanelLeft,
   Columns2,
   Maximize2,
   Minimize2,
@@ -46,10 +45,8 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
     restoreNote,
     permanentlyDeleteNote,
     unlockedNotes,
-    isSidebarOpen,
     isNotesListOpen,
     isFocusMode,
-    toggleSidebar,
     toggleNotesList,
     toggleFocusMode,
   } = useNotes();
@@ -88,25 +85,19 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
   return (
     <div className="editor-toolbar titlebar-drag">
-      {/* Left side: Apple Notes View Toggles & New Note */}
+      {/* Left side: View Mode & New Note */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className="no-drag">
-        {/* Toggle Folder Sidebar */}
-        <button
-          className={`icon-btn ${isSidebarOpen && !isFocusMode ? 'active' : ''}`}
-          onClick={toggleSidebar}
-          title="Toggle Folder Sidebar (Ctrl+\)"
-        >
-          <PanelLeft size={16} />
-        </button>
-
-        {/* Toggle Notes List */}
-        <button
-          className={`icon-btn ${isNotesListOpen && !isFocusMode ? 'active' : ''}`}
-          onClick={toggleNotesList}
-          title="Toggle Notes List (Ctrl+Shift+L)"
-        >
-          <Columns2 size={16} />
-        </button>
+        {/* Restore Notes List if collapsed */}
+        {!isNotesListOpen && !isFocusMode && (
+          <button
+            className="icon-btn"
+            onClick={toggleNotesList}
+            title="Show Notes List (Ctrl+Shift+L)"
+            style={{ color: 'var(--accent)' }}
+          >
+            <Columns2 size={16} />
+          </button>
+        )}
 
         {/* Focus Mode (Collapse Both Sidebars for 100% writing focus) */}
         <button
