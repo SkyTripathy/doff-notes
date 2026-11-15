@@ -1,16 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from '@tiptap/extension-image';
 import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from '@tiptap/react';
-import { Trash2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { Trash2, AlignLeft, AlignCenter, AlignRight, Plus } from 'lucide-react';
 
 const ResizableImageComponent: React.FC<NodeViewProps> = ({
   node,
   updateAttributes,
   deleteNode,
   selected,
+  editor,
+  getPos,
 }) => {
   const { src, alt, width = '100%', alignment = 'center' } = node.attrs;
-  const [isHovered, setIsHovered] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [activeWidth, setActiveWidth] = useState<string>(width);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,6 +29,21 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
 
   const setAlign = (newAlign: 'left' | 'center' | 'right') => {
     updateAttributes({ alignment: newAlign });
+  };
+
+  // Insert a new paragraph below the image so user can immediately type
+  const handleInsertBelow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (editor && typeof getPos === 'function') {
+      const pos = getPos();
+      const afterPos = pos + node.nodeSize;
+      editor
+        .chain()
+        .insertContentAt(afterPos, { type: 'paragraph' })
+        .focus(afterPos + 1)
+        .run();
+    }
   };
 
   // Mouse Drag to Resize
@@ -75,6 +91,8 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
     return 'center';
   };
 
+  const isControlsVisible = selected || isResizing;
+
   return (
     <NodeViewWrapper
       className="resizable-image-wrapper"
@@ -82,13 +100,9 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: getAlignmentFlex(),
-        margin: '16px 0',
+        margin: '20px 0',
         position: 'relative',
         width: '100%',
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        if (!isResizing) setIsHovered(false);
       }}
     >
       <div
@@ -97,50 +111,33 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
           position: 'relative',
           width: activeWidth,
           maxWidth: '100%',
-          transition: isResizing ? 'none' : 'width 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-          outline: (selected || isHovered || isResizing)
-            ? '2px solid var(--accent)'
-            : '2px solid transparent',
+          transition: isResizing ? 'none' : 'width 0.15s ease',
+          outline: isControlsVisible ? '2px solid var(--accent)' : '2px solid transparent',
           borderRadius: '8px',
-          boxShadow: (selected || isResizing)
-            ? '0 0 0 4px rgba(212, 155, 41, 0.2)'
-            : 'none',
         }}
       >
-        <img
-          src={src}
-          alt={alt || ''}
-          style={{
-            display: 'block',
-            width: '100%',
-            height: 'auto',
-            borderRadius: '8px',
-            userSelect: 'none',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* Floating Quick Action Toolbar on hover, select, or resize */}
-        {(isHovered || selected || isResizing) && (
+        {/* Floating Quick Action Toolbar - Sits OUTSIDE above the image so it NEVER covers diagrams */}
+        {isControlsVisible && (
           <div
             className="image-actions-pill no-drag"
             style={{
               position: 'absolute',
-              top: '8px',
-              right: '8px',
-              backgroundColor: 'rgba(28, 28, 30, 0.92)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '20px',
-              padding: '4px 8px',
+              top: '-42px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'var(--bg-window)',
+              borderRadius: '8px',
+              padding: '3px 8px',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.35)',
-              zIndex: 40,
-              color: '#ffffff',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
+              zIndex: 50,
+              color: 'var(--text-primary)',
               fontSize: '11px',
-              fontWeight: 600,
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              fontWeight: 500,
+              border: '1px solid var(--border-color)',
+              whiteSpace: 'nowrap',
             }}
           >
             {/* Presets */}
@@ -149,12 +146,13 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
               onClick={() => setPresetWidth('25%')}
               style={{
                 background: activeWidth === '25%' ? 'var(--accent)' : 'transparent',
-                color: '#fff',
+                color: activeWidth === '25%' ? '#ffffff' : 'var(--text-primary)',
                 padding: '2px 6px',
                 borderRadius: '4px',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '11px',
+                fontWeight: 600,
               }}
               title="Small (25%)"
             >
@@ -165,12 +163,13 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
               onClick={() => setPresetWidth('50%')}
               style={{
                 background: activeWidth === '50%' ? 'var(--accent)' : 'transparent',
-                color: '#fff',
+                color: activeWidth === '50%' ? '#ffffff' : 'var(--text-primary)',
                 padding: '2px 6px',
                 borderRadius: '4px',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '11px',
+                fontWeight: 600,
               }}
               title="Medium (50%)"
             >
@@ -181,12 +180,13 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
               onClick={() => setPresetWidth('75%')}
               style={{
                 background: activeWidth === '75%' ? 'var(--accent)' : 'transparent',
-                color: '#fff',
+                color: activeWidth === '75%' ? '#ffffff' : 'var(--text-primary)',
                 padding: '2px 6px',
                 borderRadius: '4px',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '11px',
+                fontWeight: 600,
               }}
               title="Large (75%)"
             >
@@ -197,27 +197,28 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
               onClick={() => setPresetWidth('100%')}
               style={{
                 background: activeWidth === '100%' ? 'var(--accent)' : 'transparent',
-                color: '#fff',
+                color: activeWidth === '100%' ? '#ffffff' : 'var(--text-primary)',
                 padding: '2px 6px',
                 borderRadius: '4px',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '11px',
+                fontWeight: 600,
               }}
               title="Full Width (100%)"
             >
               100%
             </button>
 
-            <span style={{ width: '1px', height: '14px', backgroundColor: 'rgba(255,255,255,0.2)' }} />
+            <span style={{ width: '1px', height: '14px', backgroundColor: 'var(--border-color)' }} />
 
             {/* Alignment buttons */}
             <button
               type="button"
               onClick={() => setAlign('left')}
               style={{
-                background: alignment === 'left' ? 'rgba(255,255,255,0.25)' : 'transparent',
-                color: '#fff',
+                background: alignment === 'left' ? 'rgba(212, 155, 41, 0.2)' : 'transparent',
+                color: alignment === 'left' ? 'var(--accent)' : 'var(--text-secondary)',
                 padding: '3px',
                 borderRadius: '4px',
                 border: 'none',
@@ -233,8 +234,8 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
               type="button"
               onClick={() => setAlign('center')}
               style={{
-                background: alignment === 'center' ? 'rgba(255,255,255,0.25)' : 'transparent',
-                color: '#fff',
+                background: alignment === 'center' ? 'rgba(212, 155, 41, 0.2)' : 'transparent',
+                color: alignment === 'center' ? 'var(--accent)' : 'var(--text-secondary)',
                 padding: '3px',
                 borderRadius: '4px',
                 border: 'none',
@@ -250,8 +251,8 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
               type="button"
               onClick={() => setAlign('right')}
               style={{
-                background: alignment === 'right' ? 'rgba(255,255,255,0.25)' : 'transparent',
-                color: '#fff',
+                background: alignment === 'right' ? 'rgba(212, 155, 41, 0.2)' : 'transparent',
+                color: alignment === 'right' ? 'var(--accent)' : 'var(--text-secondary)',
                 padding: '3px',
                 borderRadius: '4px',
                 border: 'none',
@@ -264,7 +265,7 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
               <AlignRight size={13} />
             </button>
 
-            <span style={{ width: '1px', height: '14px', backgroundColor: 'rgba(255,255,255,0.2)' }} />
+            <span style={{ width: '1px', height: '14px', backgroundColor: 'var(--border-color)' }} />
 
             {/* Delete button */}
             <button
@@ -287,30 +288,66 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
           </div>
         )}
 
-        {/* Drag handle in bottom right corner */}
-        {(isHovered || selected || isResizing) && (
+        <img
+          src={src}
+          alt={alt || ''}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            borderRadius: '8px',
+            userSelect: 'none',
+          }}
+        />
+
+        {/* Drag handle in bottom right corner (only when selected) */}
+        {isControlsVisible && (
           <div
             onMouseDown={handleMouseDown}
             style={{
               position: 'absolute',
               right: '-6px',
               bottom: '-6px',
-              width: '18px',
-              height: '18px',
+              width: '14px',
+              height: '14px',
               backgroundColor: 'var(--accent)',
               borderRadius: '50%',
               border: '2px solid #ffffff',
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.35)',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.35)',
               cursor: 'se-resize',
               zIndex: 45,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
             title="Drag to resize"
           />
         )}
       </div>
+
+      {/* Helpful "Write below" helper button when image is selected */}
+      {isControlsVisible && (
+        <button
+          type="button"
+          onClick={handleInsertBelow}
+          style={{
+            marginTop: '8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '3px 10px',
+            fontSize: '11px',
+            fontWeight: 500,
+            borderRadius: '6px',
+            border: '1px dashed var(--border-color)',
+            backgroundColor: 'var(--bg-window)',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+          }}
+          title="Start writing below this image (or press Enter)"
+        >
+          <Plus size={12} color="var(--accent)" />
+          <span>Write below this image (or press Enter)</span>
+        </button>
+      )}
     </NodeViewWrapper>
   );
 };
@@ -341,5 +378,35 @@ export const ResizableImage = Image.extend({
 
   addNodeView() {
     return ReactNodeViewRenderer(ResizableImageComponent);
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      Enter: ({ editor }) => {
+        const { state } = editor;
+        const { selection } = state;
+        // If image node is selected, press Enter to insert paragraph right after it
+        if ('node' in selection && (selection as any).node?.type.name === 'image') {
+          const afterPos = selection.$to.after();
+          return editor
+            .chain()
+            .insertContentAt(afterPos, { type: 'paragraph' })
+            .focus(afterPos + 1)
+            .run();
+        }
+        return false;
+      },
+      ArrowDown: ({ editor }) => {
+        const { state } = editor;
+        const { selection } = state;
+        if ('node' in selection && (selection as any).node?.type.name === 'image') {
+          const afterPos = selection.$to.after();
+          if (afterPos <= state.doc.content.size) {
+            return editor.commands.focus(afterPos + 1);
+          }
+        }
+        return false;
+      },
+    };
   },
 });

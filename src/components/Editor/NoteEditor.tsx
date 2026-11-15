@@ -9,6 +9,7 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import { ResizableImage } from './extensions/ResizableImage';
 import { LinkCard, extractYouTubeVideoId } from './extensions/LinkCard';
+import { TrailingNode } from './extensions/TrailingNode';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import Highlight from '@tiptap/extension-highlight';
@@ -81,6 +82,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ onOpenLockModal }) => {
         allowBase64: true,
       }),
       LinkCard,
+      TrailingNode,
       Underline,
       Highlight.configure({
         multicolor: false,
@@ -396,8 +398,14 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ onOpenLockModal }) => {
           <div
             className={`editor-content-container ${isFocusMode ? 'focus-mode-container' : ''}`}
             onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                editor?.commands.focus('end');
+              if (e.target === e.currentTarget && editor) {
+                const endPos = editor.state.doc.content.size;
+                const lastChild = editor.state.doc.lastChild;
+                if (!lastChild || lastChild.type.name !== 'paragraph') {
+                  editor.chain().insertContentAt(endPos, { type: 'paragraph' }).focus('end').run();
+                } else {
+                  editor.commands.focus('end');
+                }
               }
             }}
           >
